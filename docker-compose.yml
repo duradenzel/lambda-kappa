@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+
+  # -------------------------
+  # SHARED DATA GENERATOR
+  # -------------------------
+  generator:
+    build: ./shared
+    container_name: generator
+    volumes:
+      - ./shared:/data
+    command: ["python", "generator.py"]
+
+  # -------------------------
+  # LAMBDA SPEED LAYER
+  # -------------------------
+  lambda-speed:
+    build: ./lambda/speed
+    container_name: lambda-speed
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./shared:/data
+
+  # -------------------------
+  # LAMBDA BATCH LAYER
+  # -------------------------
+  lambda-batch:
+    build: ./lambda/batch
+    container_name: lambda-batch
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./shared:/data
+
+  # -------------------------
+  # KAPPA (TELEGRAF STREAM)
+  # -------------------------
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    volumes:
+      - ./kappa/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./shared:/data
+    ports:
+      - "9273:9273"
+    command: ["telegraf", "--config", "/etc/telegraf/telegraf.conf"]
+
+  # -------------------------
+  # PROMETHEUS (LAMBDA)
+  # -------------------------
+  prometheus-lambda:
+    image: prom/prometheus:latest
+    container_name: prometheus-lambda
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./lambda/prometheus-lambda.yml:/etc/prometheus/prometheus.yml
+
+  # -------------------------
+  # PROMETHEUS (KAPPA)
+  # -------------------------
+  prometheus-kappa:
+    image: prom/prometheus:latest
+    container_name: prometheus-kappa
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./kappa/prometheus/prometheus-kappa.yml:/etc/prometheus/prometheus.yml
+
+  # -------------------------
+  # GRAFANA
+  # -------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus-lambda
+      - prometheus-kappa
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning

@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 2s
+
+scrape_configs:
+  - job_name: "lambda-speed"
+    static_configs:
+      - targets: ["lambda-speed:5000"]
+
+  - job_name: "lambda-batch"
+    static_configs:
+      - targets: ["lambda-batch:5002"]

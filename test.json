@@ -1,0 +1,80 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Lambda Freshness Comparison",
+    "tags": ["lambda", "kappa", "latency", "experiment"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5s",
+    "__inputs": [
+      {
+        "name": "DS_PROMETHEUS",
+        "label": "Prometheus",
+        "type": "datasource",
+        "pluginId": "prometheus"
+      }
+    ],
+    "panels": [
+      {
+        "id": 1,
+        "type": "timeseries",
+        "title": "Lambda Speed Layer Latency",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+            "expr": "lambda_speed_latency",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "s" }
+        }
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "Lambda Batch Layer Latency",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+            "expr": "lambda_batch_latency",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "s" }
+        }
+      },
+      {
+        "id": 3,
+        "type": "timeseries",
+        "title": "Speed vs Batch Latency Comparison",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "gridPos": { "x": 0, "y": 8, "w": 24, "h": 10 },
+        "targets": [
+          {
+            "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+            "expr": "lambda_speed_latency",
+            "legendFormat": "Speed Layer",
+            "refId": "A"
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+            "expr": "lambda_batch_latency",
+            "legendFormat": "Batch Layer",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "s" }
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}
