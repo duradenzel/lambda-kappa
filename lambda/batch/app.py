@@ -4,7 +4,6 @@ import time
 import threading
 
 app = Flask(__name__)
-
 latest = {}
 
 def worker():
@@ -12,13 +11,17 @@ def worker():
     while True:
         try:
             with open("/data/metrics.csv") as f:
-                rows = list(csv.DictReader(f))
+                rows = [r for r in csv.DictReader(f) if r.get("timestamp", "").strip()]
                 if rows:
-                    latest = rows[-1]
-                    latest["batch_time"] = time.time()
+                    row = rows[-1]
+                    latest = {
+                        "timestamp": float(row["timestamp"].strip()),
+                        "temperature": float(row["temperature"].strip()),
+                        "pressure": float(row["pressure"].strip()),
+                        "batch_time": time.time()
+                    }
         except Exception as e:
-            print(e)
-
+            print("Error in worker:", e)
         time.sleep(10)
 
 @app.route("/metrics")
@@ -26,9 +29,13 @@ def metrics():
     if not latest:
         return Response("", mimetype="text/plain")
 
-    latency = float(latest["batch_time"]) - float(latest["timestamp"])
+    try:
+        latency = latest["batch_time"] - latest["timestamp"]
+    except (KeyError, ValueError) as e:
+        print("Error computing latency:", e)
+        return Response("", mimetype="text/plain")
 
-    return Response(f"""
+    return Response(f"""\
 lambda_batch_latency {latency}
 temperature_batch {latest["temperature"]}
 pressure_batch {latest["pressure"]}

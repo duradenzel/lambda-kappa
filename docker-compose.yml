@@ -1,10 +1,5 @@
 version: "3.9"
-
 services:
-
-  # -------------------------
-  # SHARED DATA GENERATOR
-  # -------------------------
   generator:
     build: ./shared
     container_name: generator
@@ -12,9 +7,6 @@ services:
       - ./shared:/data
     command: ["python", "generator.py"]
 
-  # -------------------------
-  # LAMBDA SPEED LAYER
-  # -------------------------
   lambda-speed:
     build: ./lambda/speed
     container_name: lambda-speed
@@ -23,9 +15,6 @@ services:
     volumes:
       - ./shared:/data
 
-  # -------------------------
-  # LAMBDA BATCH LAYER
-  # -------------------------
   lambda-batch:
     build: ./lambda/batch
     container_name: lambda-batch
@@ -34,9 +23,6 @@ services:
     volumes:
       - ./shared:/data
 
-  # -------------------------
-  # KAPPA (TELEGRAF STREAM)
-  # -------------------------
   telegraf:
     image: telegraf:latest
     container_name: telegraf
@@ -47,9 +33,6 @@ services:
       - "9273:9273"
     command: ["telegraf", "--config", "/etc/telegraf/telegraf.conf"]
 
-  # -------------------------
-  # PROMETHEUS (LAMBDA)
-  # -------------------------
   prometheus-lambda:
     image: prom/prometheus:latest
     container_name: prometheus-lambda
@@ -58,9 +41,6 @@ services:
     volumes:
       - ./lambda/prometheus-lambda.yml:/etc/prometheus/prometheus.yml
 
-  # -------------------------
-  # PROMETHEUS (KAPPA)
-  # -------------------------
   prometheus-kappa:
     image: prom/prometheus:latest
     container_name: prometheus-kappa
@@ -69,9 +49,6 @@ services:
     volumes:
       - ./kappa/prometheus/prometheus-kappa.yml:/etc/prometheus/prometheus.yml
 
-  # -------------------------
-  # GRAFANA
-  # -------------------------
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
