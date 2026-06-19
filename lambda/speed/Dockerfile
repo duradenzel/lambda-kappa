@@ -1,17 +1,23 @@
 FROM python:3.11-slim
 
-# Remove perl-base and other unnecessary packages that introduce CVEs
-# then clean up apt cache in the same layer to keep image size down
-RUN apt-get purge -y --auto-remove \
+# Remove packages that introduce CVEs and aren't needed by a Python web app
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get purge -y --allow-remove-essential --auto-remove \
         perl-base \
         perl \
-        --allow-remove-essential \
+        ncurses-bin \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install dependencies as a separate layer for better caching
-RUN pip install --no-cache-dir flask
+# Pin wheel >= 0.46.2 to fix CVE-2026-24049 before installing other packages
+# Pin jaraco.context >= 6.1.0 to fix CVE-2026-23949
+RUN pip install --no-cache-dir \
+        "wheel>=0.46.2" \
+        "jaraco.context>=6.1.0" \
+        requests \
+        flask
 
 COPY app.py .
 
