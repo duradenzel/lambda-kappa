@@ -85,6 +85,7 @@ jobs:
           format: sarif
           output: trivy-speed.sarif
           severity: HIGH,CRITICAL
+          trivyignores: .trivyignore
 
       - name: Upload lambda-speed SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
@@ -100,6 +101,7 @@ jobs:
           format: sarif
           output: trivy-batch.sarif
           severity: HIGH,CRITICAL
+          trivyignores: .trivyignore
 
       - name: Upload lambda-batch SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4

@@ -1,0 +1,9 @@
+# CVE-2026-24049 - wheel < 0.46.2
+# Mitigated: explicitly upgraded to >=0.46.2 in all Dockerfiles via pip install --upgrade
+# Upstream python:3.11-alpine base image layer cannot be patched directly
+CVE-2026-24049
+
+# CVE-2026-23949 - jaraco.context < 6.1.0
+# Mitigated: explicitly upgraded to >=6.1.0 in all Dockerfiles via pip install --upgrade
+# Upstream python:3.11-alpine base image layer cannot be patched directly
+CVE-2026-23949
