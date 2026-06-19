@@ -60,21 +60,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # IMPORTANT: images must exist in THIS job
+      # FIX: Images must be built in every job that uses them (runners are isolated)
       - name: Build Docker images for scanning
         run: docker compose build
 
-      - name: Install Trivy
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget curl
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+      # FIX: Cache Trivy DB to avoid re-downloading ~97MB on every run
+      - name: Cache Trivy DB
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/trivy
+          key: trivy-db-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: trivy-db-${{ runner.os }}-
 
+      # FIX: Use official Trivy action instead of the install script
+      # FIX: Image names now match the `image:` labels set in docker-compose.yml
       - name: Scan lambda-speed image
-        run: trivy image --severity HIGH,CRITICAL -f json -o trivy-speed.json lambda-speed
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: lambda-speed
+          format: json
+          output: trivy-speed.json
+          severity: HIGH,CRITICAL
 
       - name: Scan lambda-batch image
-        run: trivy image --severity HIGH,CRITICAL -f json -o trivy-batch.json lambda-batch
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: lambda-batch
+          format: json
+          output: trivy-batch.json
+          severity: HIGH,CRITICAL
 
       - name: Upload Trivy reports
         if: always()
