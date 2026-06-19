@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 # Remove packages that introduce CVEs and aren't needed by a Python web app
 RUN apt-get update \
