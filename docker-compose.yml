@@ -9,6 +9,7 @@ services:
 
   lambda-speed:
     build: ./lambda/speed
+    image: lambda-speed
     container_name: lambda-speed
     ports:
       - "5000:5000"
@@ -17,6 +18,7 @@ services:
 
   lambda-batch:
     build: ./lambda/batch
+    image: lambda-batch
     container_name: lambda-batch
     ports:
       - "5002:5002"
