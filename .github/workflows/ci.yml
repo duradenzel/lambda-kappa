@@ -1,4 +1,4 @@
-name: CI Pipeline (Lambda/Kappa Monitoring System)
+name: CI/CD - Lambda vs Kappa Monitoring System
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   # -------------------------
-  # 1. BUILD JOB
+  # 1. BUILD
   # -------------------------
   build:
     runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
 
 
   # -------------------------
-  # 2. TEST JOB (static checks)
+  # 2. STATIC TESTS
   # -------------------------
   test:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Python syntax validation
+      - name: Python syntax checks
         run: |
           python -m py_compile shared/generator.py
           python -m py_compile lambda/speed/app.py
@@ -47,7 +47,7 @@ jobs:
 
 
   # -------------------------
-  # 3. SECURITY SCAN (Trivy)
+  # 3. SECURITY (DEVSECOPS - TRIVY)
   # -------------------------
   security:
     runs-on: ubuntu-latest
@@ -57,23 +57,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # IMPORTANT: images must exist in THIS job
+      - name: Build Docker images for scanning
+        run: docker compose build
+
       - name: Install Trivy
         run: |
           sudo apt-get update
           sudo apt-get install -y wget curl
-
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
 
-      # Scan all built images
       - name: Scan lambda-speed image
-        run: trivy image lambda-speed || true
+        run: trivy image --severity HIGH,CRITICAL -f json -o trivy-speed.json lambda-speed
 
       - name: Scan lambda-batch image
-        run: trivy image lambda-batch || true
+        run: trivy image --severity HIGH,CRITICAL -f json -o trivy-batch.json lambda-batch
+
+      - name: Upload Trivy reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: |
+            trivy-speed.json
+            trivy-batch.json
 
 
   # -------------------------
-  # 4. INTEGRATION TEST JOB
+  # 4. INTEGRATION TESTS (SYSTEM RUN)
   # -------------------------
   integration:
     runs-on: ubuntu-latest
@@ -83,35 +97,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Start system
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start full system
         run: docker compose up -d
 
-      - name: Wait for services (health delay)
-        run: sleep 25
+      - name: Wait for services to initialize
+        run: |
+          echo "Waiting for services..."
+          sleep 30
 
       # -------------------------
-      # Collect runtime metrics
+      # Health checks (better than blind sleep)
       # -------------------------
-      - name: Fetch Lambda Speed metrics
+      - name: Check Lambda Speed endpoint
         run: curl -f http://localhost:5000/metrics > speed_metrics.txt
 
-      - name: Fetch Lambda Batch metrics
+      - name: Check Lambda Batch endpoint
         run: curl -f http://localhost:5002/metrics > batch_metrics.txt
 
       # -------------------------
-      # Store logs for debugging
+      # Collect logs (VERY important for debugging)
       # -------------------------
-      - name: Export container logs
+      - name: Export system logs
         if: always()
         run: docker compose logs > system_logs.txt
 
       # -------------------------
-      # Upload artifacts
+      # Upload artifacts (portfolio gold)
       # -------------------------
-      - name: Upload metrics artifacts
+      - name: Upload metrics
         uses: actions/upload-artifact@v4
         with:
-          name: metrics-data
+          name: metrics
           path: |
             speed_metrics.txt
             batch_metrics.txt
