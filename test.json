@@ -5,8 +5,8 @@
     "name": "admdn4q",
     "namespace": "default",
     "uid": "07c1e7b0-c053-40e8-bfeb-cace4ed51be3",
-    "resourceVersion": "1776416947138010",
-    "generation": 2,
+    "resourceVersion": "1776631805775985",
+    "generation": 6,
     "creationTimestamp": "2026-04-17T08:41:07Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "425743134203904"
@@ -16,7 +16,7 @@
       "grafana.app/folder": "",
       "grafana.app/saved-from-ui": "Grafana v13.0.0 (e9de482b)",
       "grafana.app/updatedBy": "user:efjch8164vw1sa",
-      "grafana.app/updatedTimestamp": "2026-04-17T09:09:07Z"
+      "grafana.app/updatedTimestamp": "2026-04-19T20:50:05Z"
     }
   },
   "spec": {
@@ -140,7 +140,9 @@
                   ],
                   "displayMode": "table",
                   "placement": "bottom",
-                  "showLegend": true
+                  "showLegend": true,
+                  "sortBy": "Name",
+                  "sortDesc": true
                 },
                 "tooltip": {
                   "hideZeros": false,
@@ -240,7 +242,7 @@
         "kind": "Panel",
         "spec": {
           "id": 2,
-          "title": "⚡ Current Latency — Speed Layer",
+          "title": "Current Latency — Speed Layer",
           "description": "Latest single value for Lambda Speed Layer latency.",
           "links": [],
           "data": {
@@ -329,7 +331,7 @@
         "kind": "Panel",
         "spec": {
           "id": 3,
-          "title": "🗂️ Current Latency — Batch Layer",
+          "title": "Current Latency — Batch Layer",
           "description": "Latest single value for Lambda Batch Layer latency. Expected to be significantly higher than the Speed Layer.",
           "links": [],
           "data": {
@@ -418,8 +420,8 @@
         "kind": "Panel",
         "spec": {
           "id": 4,
-          "title": "🔄 Current Latency — Kappa Pipeline",
-          "description": "Computed as time() − tail_timestamp. Represents true end-to-end freshness for the Kappa architecture.",
+          "title": "Current Latency — Kappa Pipeline",
+          "description": "Represents true end-to-end freshness for the Kappa architecture.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -1087,6 +1089,19 @@
             "spec": {
               "x": 0,
               "y": 0,
+              "width": 24,
+              "height": 10,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 10,
               "width": 8,
               "height": 5,
               "element": {
@@ -1099,7 +1114,7 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 8,
-              "y": 0,
+              "y": 10,
               "width": 8,
               "height": 5,
               "element": {
@@ -1112,25 +1127,12 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 16,
-              "y": 0,
+              "y": 10,
               "width": 8,
               "height": 5,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-4"
-              }
-            }
-          },
-          {
-            "kind": "GridLayoutItem",
-            "spec": {
-              "x": 0,
-              "y": 5,
-              "width": 24,
-              "height": 10,
-              "element": {
-                "kind": "ElementReference",
-                "name": "panel-1"
               }
             }
           },
