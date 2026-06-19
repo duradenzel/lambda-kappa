@@ -74,30 +74,38 @@ jobs:
 
       # FIX: Use official Trivy action instead of the install script
       # FIX: Image names now match the `image:` labels set in docker-compose.yml
+      # SARIF format feeds results into GitHub Security → Code Scanning tab
       - name: Scan lambda-speed image
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: lambda-speed
-          format: json
-          output: trivy-speed.json
+          format: sarif
+          output: trivy-speed.sarif
           severity: HIGH,CRITICAL
+          exit-code: 1            # fails the job if vulnerabilities are found
+
+      - name: Upload lambda-speed SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()             # upload even if the scan step found vulnerabilities
+        with:
+          sarif_file: trivy-speed.sarif
+          category: lambda-speed
 
       - name: Scan lambda-batch image
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: lambda-batch
-          format: json
-          output: trivy-batch.json
+          format: sarif
+          output: trivy-batch.sarif
           severity: HIGH,CRITICAL
+          exit-code: 1
 
-      - name: Upload Trivy reports
+      - name: Upload lambda-batch SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: trivy-reports
-          path: |
-            trivy-speed.json
-            trivy-batch.json
+          sarif_file: trivy-batch.sarif
+          category: lambda-batch
 
 
   # -------------------------
@@ -139,7 +147,7 @@ jobs:
         run: docker compose logs > system_logs.txt
 
       # -------------------------
-      # Upload artifacts (portfolio gold)
+      # Upload artifacts
       # -------------------------
       - name: Upload metrics
         uses: actions/upload-artifact@v4
