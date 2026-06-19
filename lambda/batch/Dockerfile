@@ -5,7 +5,8 @@ FROM python:3.11-slim
 RUN apt-get purge -y --auto-remove \
         perl-base \
         perl \
-    && rm -rf /var/lib/apt/lists/*
+        --allow-remove-essential \
+    && rm -rf /var/lib/apt/lists/* 
 
 WORKDIR /app
 
