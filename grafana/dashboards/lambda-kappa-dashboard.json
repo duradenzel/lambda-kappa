@@ -1,157 +1,1283 @@
 {
-  "title": "Lambda vs Kappa Architecture — Data Freshness Comparison",
-  "uid": "lambda-kappa-main",
-  "schemaVersion": 36,
-  "version": 1,
-  "refresh": "5s",
-  "time": { "from": "now-15m", "to": "now" },
-  "tags": ["lambda", "kappa", "latency", "freshness", "experiment"],
-  "panels": [
+  "annotations": [
     {
-      "id": 1,
-      "title": "📊 End-to-End Latency: All Architectures",
-      "description": "Core comparison: how long it takes for a data point to become visible in Grafana after being generated. Lower is better.",
-      "type": "timeseries",
-      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-          "expr": "lambda_speed_latency",
-          "legendFormat": "Lambda — Speed Layer",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-          "expr": "lambda_batch_latency",
-          "legendFormat": "Lambda — Batch Layer",
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus-kappa" },
-          "expr": "time() - tail_event_time",
-          "legendFormat": "Kappa — Telegraf Tail",
-          "refId": "C"
+      "kind": "AnnotationQuery",
+      "spec": {
+        "builtIn": true,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "query": {
+          "datasource": {
+            "name": "-- Grafana --"
+          },
+          "group": "grafana",
+          "kind": "DataQuery",
+          "spec": {},
+          "version": "v0"
         }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s", "min": 0,
-          "color": { "mode": "palette-classic" },
-          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "axisLabel": "Latency (seconds)" },
-          "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "green" }, { "value": 5, "color": "yellow" }, { "value": 30, "color": "red" }] }
-        },
-        "overrides": [{ "matcher": { "id": "byName", "options": "Lambda — Batch Layer" }, "properties": [{ "id": "custom.lineStyle", "value": { "dash": [10, 5], "fill": "dash" } }, { "id": "custom.lineWidth", "value": 2 }] }]
-      },
-      "options": { "legend": { "calcs": ["mean", "min", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "asc" } }
-    },
-    {
-      "id": 2,
-      "title": "Current Latency — Speed Layer",
-      "type": "stat",
-      "gridPos": { "x": 0, "y": 10, "w": 8, "h": 5 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "lambda_speed_latency", "instant": true, "legendFormat": "Speed Latency", "refId": "A" }],
-      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "green" }, { "value": 5, "color": "yellow" }, { "value": 15, "color": "red" }] } } },
-      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"] } }
-    },
-    {
-      "id": 3,
-      "title": "Current Latency — Batch Layer",
-      "type": "stat",
-      "gridPos": { "x": 8, "y": 10, "w": 8, "h": 5 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "lambda_batch_latency", "instant": true, "legendFormat": "Batch Latency", "refId": "A" }],
-      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "green" }, { "value": 5, "color": "yellow" }, { "value": 30, "color": "red" }] } } },
-      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"] } }
-    },
-    {
-      "id": 4,
-      "title": "Current Latency — Kappa Pipeline",
-      "type": "stat",
-      "gridPos": { "x": 16, "y": 10, "w": 8, "h": 5 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-kappa" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus-kappa" }, "expr": "time() - tail_event_time", "instant": true, "legendFormat": "Kappa Latency", "refId": "A" }],
-      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "green" }, { "value": 5, "color": "yellow" }, { "value": 15, "color": "red" }] } } },
-      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"] } }
-    },
-    {
-      "id": 5,
-      "title": "🌡️ Temperature: Speed Layer vs Batch Layer (Lambda)",
-      "type": "timeseries",
-      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-      "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "temperature", "legendFormat": "Temperature — Speed Layer", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "temperature_batch", "legendFormat": "Temperature — Batch Layer", "refId": "B" }
-      ],
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "axisLabel": "Temperature" } }, "overrides": [{ "matcher": { "id": "byName", "options": "Temperature — Batch Layer" }, "properties": [{ "id": "custom.lineStyle", "value": { "dash": [10, 5], "fill": "dash" } }] }] },
-      "options": { "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } }
-    },
-    {
-      "id": 6,
-      "title": "💨 Pressure: Speed Layer vs Batch Layer (Lambda)",
-      "type": "timeseries",
-      "gridPos": { "x": 12, "y": 15, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-      "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "pressure", "legendFormat": "Pressure — Speed Layer", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "pressure_batch", "legendFormat": "Pressure — Batch Layer", "refId": "B" }
-      ],
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "axisLabel": "Pressure" } }, "overrides": [{ "matcher": { "id": "byName", "options": "Pressure — Batch Layer" }, "properties": [{ "id": "custom.lineStyle", "value": { "dash": [10, 5], "fill": "dash" } }] }] },
-      "options": { "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } }
-    },
-    {
-      "id": 7,
-      "title": "🌡️💨 Kappa: Temperature & Pressure (Continuous Stream)",
-      "type": "timeseries",
-      "gridPos": { "x": 0, "y": 23, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-kappa" },
-      "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus-kappa" }, "expr": "tail_temperature", "legendFormat": "Temperature — Kappa", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus-kappa" }, "expr": "tail_pressure", "legendFormat": "Pressure — Kappa", "refId": "B" }
-      ],
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" } } },
-      "options": { "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } }
-    },
-    {
-      "id": 8,
-      "title": "📈 Batch Lag: Speed vs Batch Latency Delta (Lambda)",
-      "description": "Difference between batch and speed layer latency. If lambda_batch_latency or lambda_speed_latency show No Data, check that your batch/speed app.py exposes these metric names to Prometheus.",
-      "type": "timeseries",
-      "gridPos": { "x": 12, "y": 23, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus-lambda" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus-lambda" }, "expr": "lambda_batch_latency - lambda_speed_latency", "legendFormat": "Batch Overhead (batch − speed)", "refId": "A" }],
-      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "fixed", "fixedColor": "orange" }, "custom": { "drawStyle": "bars", "fillOpacity": 60, "lineWidth": 1, "axisCenteredZero": true, "axisLabel": "Extra delay (s)" }, "thresholds": { "mode": "absolute", "steps": [{ "value": 0, "color": "green" }, { "value": 10, "color": "yellow" }, { "value": 30, "color": "red" }] } } },
-      "options": { "legend": { "calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "single", "sort": "none" } }
-    },
-    {
-      "id": 9,
-      "title": "📋 Generator Logs — Anomaly Injection Events",
-      "description": "Live log stream from the generator. Watch for [ANOMALY INJECTED] lines — correlate with temperature/pressure spikes above. If empty, check that Promtail is running and the compose_service label matches.",
-      "type": "logs",
-      "gridPos": { "x": 0, "y": 31, "w": 24, "h": 7 },
-      "datasource": { "type": "loki", "uid": "loki" },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "expr": "{compose_service=\"generator\"}", "refId": "A" }],
-      "options": { "showTime": true, "showLabels": false, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none" }
-    },
-    {
-      "id": 10,
-      "title": "📋 Lambda Speed — Logs",
-      "type": "logs",
-      "gridPos": { "x": 0, "y": 38, "w": 12, "h": 7 },
-      "datasource": { "type": "loki", "uid": "loki" },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "expr": "{compose_service=\"lambda-speed\"}", "refId": "A" }],
-      "options": { "showTime": true, "showLabels": false, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none" }
-    },
-    {
-      "id": 11,
-      "title": "📋 Lambda Batch — Logs",
-      "type": "logs",
-      "gridPos": { "x": 12, "y": 38, "w": 12, "h": 7 },
-      "datasource": { "type": "loki", "uid": "loki" },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "expr": "{compose_service=\"lambda-batch\"}", "refId": "A" }],
-      "options": { "showTime": true, "showLabels": false, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none" }
+      }
     }
-  ]
+  ],
+  "cursorSync": "Off",
+  "editable": true,
+  "elements": {
+    "panel-1": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "lambda_speed_latency",
+                      "legendFormat": "Lambda — Speed Layer"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              },
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "lambda_batch_latency",
+                      "legendFormat": "Lambda — Batch Layer"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "B"
+                }
+              },
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "time() - tail_event_time",
+                      "legendFormat": "Kappa — Telegraf Tail"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "C"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "Core comparison: how long it takes for a data point to become visible in Grafana after being generated. Lower is better.",
+        "id": 1,
+        "links": [],
+        "title": "📊 End-to-End Latency: All Architectures",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "Latency (seconds)",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 2,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 30
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "Lambda — Batch Layer"
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.lineStyle",
+                      "value": {
+                        "dash": [
+                          10,
+                          5
+                        ],
+                        "fill": "dash"
+                      }
+                    },
+                    {
+                      "id": "custom.lineWidth",
+                      "value": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "min",
+                  "max",
+                  "last"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "multi",
+                "sort": "asc"
+              }
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-2": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "lambda_speed_latency",
+                      "instant": true,
+                      "legendFormat": "Speed Latency"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 2,
+        "links": [],
+        "title": "Current Latency — Speed Layer",
+        "vizConfig": {
+          "group": "stat",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "decimals": 2,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 15
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "center",
+              "orientation": "auto",
+              "percentChangeColorMode": "standard",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showPercentChange": false,
+              "textMode": "auto",
+              "wideLayout": true
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-3": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "lambda_batch_latency",
+                      "instant": true,
+                      "legendFormat": "Batch Latency"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 3,
+        "links": [],
+        "title": "Current Latency — Batch Layer",
+        "vizConfig": {
+          "group": "stat",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "decimals": 2,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 30
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "center",
+              "orientation": "auto",
+              "percentChangeColorMode": "standard",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showPercentChange": false,
+              "textMode": "auto",
+              "wideLayout": true
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-4": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-kappa"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "time() - tail_event_time",
+                      "instant": true,
+                      "legendFormat": "Kappa Latency"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 4,
+        "links": [],
+        "title": "Current Latency — Kappa Pipeline",
+        "vizConfig": {
+          "group": "stat",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "decimals": 2,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 15
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "center",
+              "orientation": "auto",
+              "percentChangeColorMode": "standard",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showPercentChange": false,
+              "textMode": "auto",
+              "wideLayout": true
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-5": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "temperature",
+                      "legendFormat": "Temperature — Speed Layer"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              },
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "temperature_batch",
+                      "legendFormat": "Temperature — Batch Layer"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "B"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 5,
+        "links": [],
+        "title": "🌡️ Temperature: Speed Layer vs Batch Layer (Lambda)",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "Temperature",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 2,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "Temperature — Batch Layer"
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.lineStyle",
+                      "value": {
+                        "dash": [
+                          10,
+                          5
+                        ],
+                        "fill": "dash"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "last"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "multi",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-6": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "pressure",
+                      "legendFormat": "Pressure — Speed Layer"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              },
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "pressure_batch",
+                      "legendFormat": "Pressure — Batch Layer"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "B"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 6,
+        "links": [],
+        "title": "💨 Pressure: Speed Layer vs Batch Layer (Lambda)",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "Pressure",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 2,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "Pressure — Batch Layer"
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.lineStyle",
+                      "value": {
+                        "dash": [
+                          10,
+                          5
+                        ],
+                        "fill": "dash"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "last"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "multi",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-7": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-kappa"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "tail_temperature",
+                      "legendFormat": "Temperature — Kappa"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              },
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-kappa"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "expr": "tail_pressure",
+                      "legendFormat": "Pressure — Kappa"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "B"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 7,
+        "links": [],
+        "title": "🌡️💨 Kappa: Temperature & Pressure (Continuous Stream)",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "smooth",
+                  "lineWidth": 2,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "last"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "multi",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-8": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "prometheus-lambda"
+                    },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorMode": "code",
+                      "expr": "lambda_batch_latency - ignoring(job, instance) lambda_speed_latency\r\n",
+                      "legendFormat": "Batch Overhead (batch − speed)",
+                      "range": true
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "Difference between batch and speed layer latency. If lambda_batch_latency or lambda_speed_latency show No Data, check that your batch/speed app.py exposes these metric names to Prometheus.",
+        "id": 8,
+        "links": [],
+        "title": "📈 Batch Lag: Speed vs Batch Latency Delta (Lambda)",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": true,
+                  "axisColorMode": "text",
+                  "axisLabel": "Extra delay (s)",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "bars",
+                  "fillOpacity": 60,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 10
+                    },
+                    {
+                      "color": "red",
+                      "value": 30
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "mean",
+                  "max",
+                  "last"
+                ],
+                "displayMode": "table",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    },
+    "panel-9": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "loki"
+                    },
+                    "group": "loki",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "direction": "backward",
+                      "editorMode": "code",
+                      "expr": "{compose_service=\"generator\"}",
+                      "queryType": "range"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "Live log stream from the generator. Watch for [ANOMALY INJECTED] lines — correlate with temperature/pressure spikes above. If empty, check that Promtail is running and the compose_service label matches.",
+        "id": 9,
+        "links": [],
+        "title": "📋 Generator Logs — Anomaly Injection Events",
+        "vizConfig": {
+          "group": "logs",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {},
+              "overrides": []
+            },
+            "options": {
+              "dedupStrategy": "none",
+              "enableInfiniteScrolling": false,
+              "enableLogDetails": true,
+              "prettifyLogMessage": true,
+              "showControls": false,
+              "showFieldSelector": false,
+              "showLabels": false,
+              "showLevel": true,
+              "showTime": true,
+              "sortOrder": "Descending",
+              "timestampResolution": "ms",
+              "unwrappedColumns": false,
+              "wrapLogMessage": true
+            }
+          },
+          "version": "13.0.0"
+        }
+      }
+    }
+  },
+  "layout": {
+    "kind": "GridLayout",
+    "spec": {
+      "items": [
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-1"
+            },
+            "height": 10,
+            "width": 24,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-2"
+            },
+            "height": 5,
+            "width": 8,
+            "x": 0,
+            "y": 10
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-3"
+            },
+            "height": 5,
+            "width": 8,
+            "x": 8,
+            "y": 10
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-4"
+            },
+            "height": 5,
+            "width": 8,
+            "x": 16,
+            "y": 10
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-5"
+            },
+            "height": 8,
+            "width": 12,
+            "x": 0,
+            "y": 15
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-6"
+            },
+            "height": 8,
+            "width": 12,
+            "x": 12,
+            "y": 15
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-7"
+            },
+            "height": 8,
+            "width": 12,
+            "x": 0,
+            "y": 23
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-8"
+            },
+            "height": 8,
+            "width": 12,
+            "x": 12,
+            "y": 23
+          }
+        },
+        {
+          "kind": "GridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "ElementReference",
+              "name": "panel-9"
+            },
+            "height": 7,
+            "width": 24,
+            "x": 0,
+            "y": 31
+          }
+        }
+      ]
+    }
+  },
+  "links": [],
+  "liveNow": false,
+  "preload": false,
+  "tags": [
+    "lambda",
+    "kappa",
+    "latency",
+    "freshness",
+    "experiment"
+  ],
+  "timeSettings": {
+    "autoRefresh": "5s",
+    "autoRefreshIntervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "fiscalYearStartMonth": 0,
+    "from": "now-15m",
+    "hideTimepicker": false,
+    "timezone": "browser",
+    "to": "now"
+  },
+  "title": "Lambda vs Kappa Architecture — Data Freshness Comparison",
+  "variables": []
 }

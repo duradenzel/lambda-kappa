@@ -7,3 +7,5 @@ CVE-2026-24049
 # Mitigated: explicitly upgraded to >=6.1.0 in all Dockerfiles via pip install --upgrade
 # Upstream python:3.11-alpine base image layer cannot be patched directly
 CVE-2026-23949
+
+
