@@ -11,3 +11,15 @@ datasources:
     type: prometheus
     access: proxy
     url: http://prometheus-kappa:9090
+
+  # Loki datasource for log aggregation
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      # Link Loki logs to Prometheus metrics for correlated views in Grafana
+      derivedFields:
+        - name: TraceID
+          matcherRegex: "trace_id=(\\w+)"
+          url: ""

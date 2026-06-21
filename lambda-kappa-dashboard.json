@@ -1,0 +1,351 @@
+{
+  "title": "Lambda vs Kappa Architecture — Data Freshness Comparison",
+  "uid": "lambda-kappa-main",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "tags": ["lambda", "kappa", "latency", "freshness", "experiment"],
+  "panels": [
+    {
+      "id": 1,
+      "title": "📊 End-to-End Latency: All Architectures",
+      "description": "Core comparison: how long it takes for a data point to become visible in Grafana after being generated. Lower is better. Lambda Speed = near-realtime but less stable. Lambda Batch = delayed but recomputed. Kappa = single continuous stream.",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "datasource": "Prometheus-Lambda",
+      "targets": [
+        {
+          "expr": "lambda_speed_latency",
+          "legendFormat": "Lambda — Speed Layer",
+          "refId": "A"
+        },
+        {
+          "expr": "lambda_batch_latency",
+          "legendFormat": "Lambda — Batch Layer",
+          "refId": "B"
+        },
+        {
+          "datasource": "Prometheus-Kappa",
+          "expr": "time() - tail_event_time",
+          "legendFormat": "Kappa — Telegraf Tail",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "axisLabel": "Latency (seconds)"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 5, "color": "yellow" },
+              { "value": 30, "color": "red" }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Lambda — Batch Layer" },
+            "properties": [
+              { "id": "custom.lineStyle", "value": { "dash": [10, 5], "fill": "dash" } },
+              { "id": "custom.lineWidth", "value": 2 }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "min", "max", "last"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "asc" }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Current Latency — Speed Layer",
+      "description": "Latest single value for Lambda Speed Layer latency.",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 10, "w": 8, "h": 5 },
+      "datasource": "Prometheus-Lambda",
+      "targets": [
+        { "expr": "lambda_speed_latency", "instant": true, "legendFormat": "Speed Latency", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 5, "color": "yellow" },
+              { "value": 15, "color": "red" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 3,
+      "title": "Current Latency — Batch Layer",
+      "description": "Latest single value for Lambda Batch Layer latency. Expected to be significantly higher than the Speed Layer.",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 10, "w": 8, "h": 5 },
+      "datasource": "Prometheus-Lambda",
+      "targets": [
+        { "expr": "lambda_batch_latency", "instant": true, "legendFormat": "Batch Latency", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 5, "color": "yellow" },
+              { "value": 30, "color": "red" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 4,
+      "title": "Current Latency — Kappa Pipeline",
+      "description": "Represents true end-to-end freshness for the Kappa architecture.",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 10, "w": 8, "h": 5 },
+      "datasource": "Prometheus-Kappa",
+      "targets": [
+        { "expr": "time() - tail_event_time", "instant": true, "legendFormat": "Kappa Latency", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 5, "color": "yellow" },
+              { "value": 15, "color": "red" }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 5,
+      "title": "🌡️ Temperature: Speed Layer vs Batch Layer (Lambda)",
+      "description": "Overlays the speed and batch values for temperature. Divergence between the two lines reveals the lag and recomputation effect of the batch layer.",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 8 },
+      "datasource": "Prometheus-Lambda",
+      "targets": [
+        { "expr": "temperature", "legendFormat": "Temperature — Speed Layer", "refId": "A" },
+        { "expr": "temperature_batch", "legendFormat": "Temperature — Batch Layer", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "axisLabel": "Temperature"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Temperature — Batch Layer" },
+            "properties": [
+              { "id": "custom.lineStyle", "value": { "dash": [10, 5], "fill": "dash" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      }
+    },
+    {
+      "id": 6,
+      "title": "💨 Pressure: Speed Layer vs Batch Layer (Lambda)",
+      "description": "Overlays the speed and batch values for pressure. Divergence between the two lines reveals the lag and recomputation effect of the batch layer.",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 15, "w": 12, "h": 8 },
+      "datasource": "Prometheus-Lambda",
+      "targets": [
+        { "expr": "pressure", "legendFormat": "Pressure — Speed Layer", "refId": "A" },
+        { "expr": "pressure_batch", "legendFormat": "Pressure — Batch Layer", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "axisLabel": "Pressure"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Pressure — Batch Layer" },
+            "properties": [
+              { "id": "custom.lineStyle", "value": { "dash": [10, 5], "fill": "dash" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "🌡️💨 Kappa: Temperature & Pressure (Continuous Stream)",
+      "description": "Sensor values as seen by the Kappa pipeline (Telegraf tail). Single processing path — no speed/batch split.",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 23, "w": 12, "h": 8 },
+      "datasource": "Prometheus-Kappa",
+      "targets": [
+        { "expr": "tail_temperature", "legendFormat": "Temperature — Kappa", "refId": "A" },
+        { "expr": "tail_pressure", "legendFormat": "Pressure — Kappa", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "📈 Batch Lag: Speed vs Batch Latency Delta (Lambda)",
+      "description": "Difference between batch and speed layer latency (batch − speed). Shows the extra delay introduced by the batch recomputation cycle.",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 23, "w": 12, "h": 8 },
+      "datasource": "Prometheus-Lambda",
+      "targets": [
+        { "expr": "lambda_batch_latency - lambda_speed_latency", "legendFormat": "Batch Overhead (batch − speed)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "axisCenteredZero": true,
+            "axisLabel": "Extra delay (s)"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 10, "color": "yellow" },
+              { "value": 30, "color": "red" }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
+      "id": 9,
+      "title": "📋 Generator Logs — Anomaly Injection Events",
+      "description": "Live log stream from the generator. Watch for [ANOMALY INJECTED] lines which mark deliberate spikes in temperature and pressure — correlate with the metric panels above.",
+      "type": "logs",
+      "gridPos": { "x": 0, "y": 31, "w": 24, "h": 7 },
+      "datasource": "Loki",
+      "targets": [
+        { "expr": "{compose_service=\"generator\"}", "refId": "A" }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 10,
+      "title": "📋 Lambda Speed — Logs",
+      "description": "Live log stream from the lambda-speed service. Errors here correlate with latency spikes in the Speed Layer panels above.",
+      "type": "logs",
+      "gridPos": { "x": 0, "y": 38, "w": 12, "h": 7 },
+      "datasource": "Loki",
+      "targets": [
+        { "expr": "{compose_service=\"lambda-speed\"}", "refId": "A" }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 11,
+      "title": "📋 Lambda Batch — Logs",
+      "description": "Live log stream from the lambda-batch service. Errors here correlate with latency spikes in the Batch Layer panels above.",
+      "type": "logs",
+      "gridPos": { "x": 12, "y": 38, "w": 12, "h": 7 },
+      "datasource": "Loki",
+      "targets": [
+        { "expr": "{compose_service=\"lambda-batch\"}", "refId": "A" }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    }
+  ]
+}
