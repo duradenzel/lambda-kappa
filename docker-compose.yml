@@ -51,8 +51,6 @@ services:
     volumes:
       - ./kappa/prometheus/prometheus-kappa.yml:/etc/prometheus/prometheus.yml
 
-  # ── LOGGING STACK ──────────────────────────────────────────────
-  # Loki: log aggregation and storage
   loki:
     image: grafana/loki:2.9.0
     container_name: loki
@@ -60,9 +58,9 @@ services:
       - "3100:3100"
     volumes:
       - ./loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
 
-  # Promtail: log collector — scrapes container logs and ships to Loki
   promtail:
     image: grafana/promtail:2.9.0
     container_name: promtail
@@ -82,6 +80,16 @@ services:
     depends_on:
       - prometheus-lambda
       - prometheus-kappa
-      - loki                  # wait for Loki before starting Grafana
+      - loki
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      # FIX: mount the dashboard JSON into the path the provider scans
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana   # persists Grafana state across restarts
+
+volumes:
+  loki-data:
+  grafana-data:

@@ -3,23 +3,19 @@ apiVersion: 1
 datasources:
   - name: Prometheus-Lambda
     type: prometheus
+    uid: prometheus-lambda        # matches dashboard panel datasource uid
     access: proxy
     url: http://prometheus-lambda:9090
     isDefault: true
 
   - name: Prometheus-Kappa
     type: prometheus
+    uid: prometheus-kappa         # matches dashboard panel datasource uid
     access: proxy
     url: http://prometheus-kappa:9090
 
-  # Loki datasource for log aggregation
   - name: Loki
     type: loki
+    uid: loki                     # matches dashboard panel datasource uid
     access: proxy
     url: http://loki:3100
-    jsonData:
-      # Link Loki logs to Prometheus metrics for correlated views in Grafana
-      derivedFields:
-        - name: TraceID
-          matcherRegex: "trace_id=(\\w+)"
-          url: ""
