@@ -4,7 +4,13 @@ import time
 import threading
 
 app = Flask(__name__)
-latest = {}
+
+latest = {
+    "timestamp": time.time(),
+    "temperature": 0.0,
+    "pressure": 0.0,
+    "batch_time": time.time()
+}
 
 def worker():
     global latest
@@ -26,9 +32,6 @@ def worker():
 
 @app.route("/metrics")
 def metrics():
-    if not latest:
-        return Response("", mimetype="text/plain")
-
     try:
         latency = latest["batch_time"] - latest["timestamp"]
     except (KeyError, ValueError) as e:

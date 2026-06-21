@@ -51,8 +51,9 @@ services:
     volumes:
       - ./kappa/prometheus/prometheus-kappa.yml:/etc/prometheus/prometheus.yml
 
+  # FIX: bumped to 3.4.2 — volume API (used by Grafana Drilldown) requires Loki 3.x
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:3.4.2
     container_name: loki
     ports:
       - "3100:3100"
@@ -62,7 +63,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
 
   promtail:
-    image: grafana/promtail:2.9.0
+    image: grafana/promtail:3.4.2
     container_name: promtail
     volumes:
       - ./promtail/promtail-config.yml:/etc/promtail/config.yml
@@ -86,9 +87,8 @@ services:
     volumes:
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      # FIX: mount the dashboard JSON into the path the provider scans
       - ./grafana/dashboards:/var/lib/grafana/dashboards
-      - grafana-data:/var/lib/grafana   # persists Grafana state across restarts
+      - grafana-data:/var/lib/grafana
 
 volumes:
   loki-data:
