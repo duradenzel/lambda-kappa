@@ -7,9 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  # -------------------------
-  # 1. BUILD
-  # -------------------------
+  
   build:
     runs-on: ubuntu-latest
 
@@ -24,9 +22,6 @@ jobs:
         run: docker compose build
 
 
-  # -------------------------
-  # 2. STATIC TESTS
-  # -------------------------
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -46,14 +41,12 @@ jobs:
         run: docker compose config
 
 
-  # -------------------------
-  # 3. SECURITY (DEVSECOPS - TRIVY)
-  # -------------------------
+
   security:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      security-events: write   # FIX: required to upload SARIF to GitHub Security tab
+      security-events: write 
       contents: read
 
     steps:
@@ -63,11 +56,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Images must be built in every job that uses them (runners are isolated)
       - name: Build Docker images for scanning
         run: docker compose build
 
-      # Cache Trivy DB to avoid re-downloading ~97MB on every run
+
       - name: Cache Trivy DB
         uses: actions/cache@v4
         with:
@@ -75,9 +67,6 @@ jobs:
           key: trivy-db-${{ runner.os }}-${{ github.run_id }}
           restore-keys: trivy-db-${{ runner.os }}-
 
-      # FIX: exit-code removed from scan steps so both scans always run and
-      # both SARIF files always exist before uploading. A separate step
-      # checks for vulnerabilities and fails the job afterward.
       - name: Scan lambda-speed image
         uses: aquasecurity/trivy-action@master
         with:
@@ -110,17 +99,14 @@ jobs:
           sarif_file: trivy-batch.sarif
           category: lambda-batch
 
-      # FIX: Fail the job AFTER both scans and uploads are complete.
-      # Re-runs Trivy in table format (no file output) purely to set exit code.
+
       - name: Fail job if HIGH/CRITICAL vulnerabilities found
         run: |
           trivy image --severity HIGH,CRITICAL --exit-code 1 --quiet lambda-speed
           trivy image --severity HIGH,CRITICAL --exit-code 1 --quiet lambda-batch
 
 
-  # -------------------------
-  # 4. INTEGRATION TESTS (SYSTEM RUN)
-  # -------------------------
+
   integration:
     runs-on: ubuntu-latest
     needs: build
